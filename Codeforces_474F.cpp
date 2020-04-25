@@ -51,22 +51,32 @@ void init(int point,int l,int r)
     segtree[point].gcd = GCD(segtree[left].gcd,segtree[right].gcd);
     segtree[point].mi = min(segtree[left].mi,segtree[right].mi);
 }
-
-pair<long long,long long> query(int point,int l,int r,int i, int j)
+int gcd_query(int point,int l,int r,int i, int j)
 {
     if(i>r or j<l)
-        return {0,INT_MAX};
+        return 0;
     if(l>=i and r<=j)
-        return {segtree[point].gcd,segtree[point].mi};
+        return segtree[point].gcd;
 
     int left = point<<1;
     int right = left|1;
     int mid = (l+r)>>1;
 
-    int gcd = GCD(query(left,l,mid,i,j).first,query(right,mid+1,r,i,j).first);
-    int mi = min(query(left,l,mid,i,j).second,query(right,mid+1,r,i,j).second);
+    return GCD(gcd_query(left,l,mid,i,j),gcd_query(right,mid+1,r,i,j));
+}
 
-    return {gcd,mi};
+int min_query(int point,int l,int r,int i, int j)
+{
+    if(i>r or j<l)
+        return INT_MAX;
+    if(l>=i and r<=j)
+        return segtree[point].mi;
+
+    int left = point<<1;
+    int right = left|1;
+    int mid = (l+r)>>1;
+
+    return min(min_query(left,l,mid,i,j),min_query(right,mid+1,r,i,j));
 }
 
 int main()
@@ -90,18 +100,18 @@ int main()
 
     while(q--)
     {
-        pair<int,int>x;
-        int l,r;
+        int l,r,gcd,mi;
 
         cin>>l>>r;
 
-        x = query(1,1,n,l,r);
+        gcd = gcd_query(1,1,n,l,r);
+        mi = min_query(1,1,n,l,r);
 
-        if(x.first!=x.second)
+        if(gcd!=mi)
             cout<<r-l+1<<endl;
         else
         {
-            int cnt = upper_bound(mp[x.first].begin(),mp[x.first].end(),r)-lower_bound(mp[x.first].begin(),mp[x.first].end(),l);
+            int cnt = upper_bound(mp[gcd].begin(),mp[gcd].end(),r)-lower_bound(mp[gcd].begin(),mp[gcd].end(),l);
             cout<<r-l+1-cnt<<endl;
         }
     }
